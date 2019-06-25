@@ -1,0 +1,13 @@
+{
+	"name": "bootcamp-challenge-01",
+	"version": "1.0.0",
+	"main": "index.js",
+	"author": "guilhermerodz <guilherme.rodrigues.profissional@gmail.com>",
+	"license": "MIT",
+	"scripts": {
+		"dev": "nodemon index.js"
+	},
+	"dependencies": {
+		"express": "^4.17.1"
+	}
+}
