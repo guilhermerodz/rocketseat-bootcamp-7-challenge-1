@@ -19,17 +19,15 @@ app.use((req, res, next) => {
 	next();
 });
 
-function checkHasTitle(req, res, next) {
-	if (!req.body.title)
-		return res.status(400).json({ error: 'Title is required' });
-
-	return next();
-}
-
-function checkHasId(req, res, next) {
-	if (!req.body.id) return res.status(400).json({ error: 'ID is required' });
-
-	return next();
+function checkHasBodyField(...fields) {
+	return function(req, res, next) {
+		for (field of fields)
+			if (!req.body[field])
+				return res
+					.status(400)
+					.json({ error: `Field is required ('${field}')` });
+		return next();
+	};
 }
 
 function checkProjectExists(req, res, next) {
@@ -47,7 +45,7 @@ app.get('/projects', (req, res) => {
 	return res.json(projects);
 });
 
-app.post('/projects', checkHasTitle, checkHasId, (req, res, next) => {
+app.post('/projects', checkHasBodyField('title', 'id'), (req, res, next) => {
 	const { id, title } = req.body;
 	const index = getProjectIndexById(id);
 
@@ -62,7 +60,7 @@ app.post('/projects', checkHasTitle, checkHasId, (req, res, next) => {
 app.post(
 	'/projects/:id/tasks',
 	checkProjectExists,
-	checkHasTitle,
+	checkHasBodyField('title'),
 	(req, res, next) => {
 		projects[req.projectIndex].tasks.push(req.body.title);
 
@@ -70,11 +68,16 @@ app.post(
 	}
 );
 
-app.put('/projects/:id', checkProjectExists, checkHasTitle, (req, res) => {
-	projects[req.projectIndex].title = req.body.title;
+app.put(
+	'/projects/:id',
+	checkProjectExists,
+	checkHasBodyField('title'),
+	(req, res) => {
+		projects[req.projectIndex].title = req.body.title;
 
-	return res.json(projects);
-});
+		return res.json(projects);
+	}
+);
 
 app.delete('/projects/:id', checkProjectExists, (req, res) => {
 	projects.splice(req.projectIndex, 1);
